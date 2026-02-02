@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Troubleshooter</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .fade-in { animation: fadeIn 0.5s ease-in; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="bg-slate-900 text-white font-sans min-h-screen flex items-center justify-center p-4">
+
+    <div id="app" class="max-w-md w-full bg-slate-800 rounded-2xl shadow-2xl p-8 border border-slate-700 fade-in">
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-blue-400">Maschinen-Assistent v1.0</h1>
+            <p class="text-slate-400 text-sm">Folgen Sie den Anweisungen</p>
+        </div>
+
+        <div id="step-container">
+            <h2 id="question" class="text-xl mb-6 leading-tight font-medium">Lade Ablauf...</h2>
+            <div id="options" class="space-y-3">
+                </div>
+        </div>
+
+        <button onclick="restart()" class="mt-8 text-xs text-slate-500 hover:text-white transition uppercase tracking-widest">↻ Neustart</button>
+    </div>
+
+    <script>
+        // Deine Logik-Datenbank (Switch-Case Ersatz)
+        const workflow = {
+            start: {
+                text: "Was ist das Hauptproblem?",
+                options: [
+                    { label: "Maschine startet nicht", next: "power_check" },
+                    { label: "Fehlermeldung am Display", next: "error_code" }
+                ]
+            },
+            power_check: {
+                text: "Prüfen Sie den Hauptschalter (Q1). Steht dieser auf ON?",
+                options: [
+                    { label: "Ja, ist auf ON", next: "emergency_stop" },
+                    { label: "Nein, war OFF", next: "solve_power" }
+                ]
+            },
+            emergency_stop: {
+                text: "Ist der Not-Halt-Taster entriegelt?",
+                options: [
+                    { label: "Ja", next: "call_technician" },
+                    { label: "Nein, war gedrückt", next: "solve_emergency" }
+                ]
+            },
+            solve_power: { text: "Schalten Sie Q1 ein und drücken Sie Start.", options: [] },
+            solve_emergency: { text: "Not-Halt entriegeln und Reset-Taste drücken.", options: [] },
+            error_code: { text: "Bitte den QR-Code am Display scannen oder Technik rufen.", options: [] },
+            call_technician: { text: "Kritischer Fehler. Bitte Instandhaltung informieren (Tel: 112).", options: [] }
+        };
+
+        let currentState = "start";
+
+        function render() {
+            const step = workflow[currentState];
+            document.getElementById('question').innerText = step.text;
+            const optionsDiv = document.getElementById('options');
+            optionsDiv.innerHTML = "";
+
+            if (step.options.length === 0) {
+                optionsDiv.innerHTML = "<div class='p-4 bg-green-900/30 border border-green-500 text-green-400 rounded-lg text-center'>Lösung erreicht.</div>";
+            }
+
+            step.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left p-4 bg-slate-700 hover:bg-blue-600 rounded-xl transition-all duration-200 border border-slate-600 hover:border-blue-400 shadow-sm";
+                btn.innerText = opt.label;
+                btn.onclick = () => {
+                    currentState = opt.next;
+                    render();
+                };
+                optionsDiv.appendChild(btn);
+            });
+        }
+
+        function restart() {
+            currentState = "start";
+            render();
+        }
+
+        render();
+    </script>
+</body>
+</html>
